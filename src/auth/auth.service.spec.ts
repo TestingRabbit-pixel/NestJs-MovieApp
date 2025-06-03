@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -20,8 +21,8 @@ describe('AuthService', () => {
         {
           provide: 'UserModel', // Mocking Mongoose model
           useValue: {
-            findOne: jest.fn(),
-            create: jest.fn(),
+            findOne: vi.fn(),
+            create: vi.fn(),
           }
         }
       ],
@@ -76,7 +77,7 @@ describe('AuthService', () => {
     });
 
     it('should hash the user password before saving', async () => {
-      const hashSpy = jest.spyOn(bcrypt, 'hash');
+      const hashSpy = vi.spyOn(bcrypt, 'hash');
       
       mockUserModel.findOne.mockResolvedValue(null);
       mockUserModel.create.mockResolvedValue({

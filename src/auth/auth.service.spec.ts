@@ -23,6 +23,7 @@ describe('AuthService', () => {
   beforeEach(async () => {
     mockUserModel = {
       findOne: jest.fn(),
+      create: jest.fn(),
       save: jest.fn(),
     };
 
@@ -64,12 +65,14 @@ describe('AuthService', () => {
       // Mock no existing user
       mockUserModel.findOne.mockResolvedValue(null);
 
-      // Mock save method
-      const savedUser = {
+      // Create a mock instance to simulate mongoose document
+      const savedUserMock = {
         ...registerDto,
-        passwordHash: await bcrypt.hash(registerDto.password, 10),
+        _id: 'mockUserId',
+        save: jest.fn().mockResolvedValue(this),
       };
-      mockUserModel.save.mockResolvedValue(savedUser);
+      
+      mockUserModel.create.mockResolvedValue(savedUserMock);
 
       const result = await authService.register(registerDto);
 
@@ -78,6 +81,10 @@ describe('AuthService', () => {
         lastName: mockUser.lastName,
         email: mockUser.email,
         username: mockUser.username,
+      });
+
+      expect(mockUserModel.findOne).toHaveBeenCalledWith({
+        $or: [{ username: mockUser.username }, { email: mockUser.email }],
       });
     });
 
@@ -113,6 +120,15 @@ describe('AuthService', () => {
       mockUserModel.findOne.mockResolvedValue(null);
 
       const bcryptSpy = jest.spyOn(bcrypt, 'hash');
+
+      // Create a mock instance to simulate mongoose document
+      const savedUserMock = {
+        ...registerDto,
+        _id: 'mockUserId',
+        save: jest.fn().mockResolvedValue(this),
+      };
+      
+      mockUserModel.create.mockResolvedValue(savedUserMock);
 
       await authService.register(registerDto);
 
